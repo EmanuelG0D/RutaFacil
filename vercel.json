@@ -1,6 +1,7 @@
 {
   "routes": [
     { "src": "/repartidor", "dest": "/repartidor.html" },
+    { "src": "/repartidor/", "dest": "/repartidor.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
