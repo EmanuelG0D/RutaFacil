@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaFácil - Seguimiento de Entregas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script type="module" src="app.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* 🎨 Animación de fondo con burbujas */
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+      backdrop-filter: blur(10px);
+    }
+    
+    .bubble:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      left: 10%;
+      animation-duration: 12s;
+      animation-delay: 0s;
+    }
+    
+    .bubble:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      left: 30%;
+      animation-duration: 18s;
+      animation-delay: 2s;
+    }
+    
+    .bubble:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      left: 50%;
+      animation-duration: 10s;
+      animation-delay: 4s;
+    }
+    
+    .bubble:nth-child(4) {
+      width: 100px;
+      height: 100px;
+      left: 70%;
+      animation-duration: 14s;
+      animation-delay: 1s;
+    }
+    
+    .bubble:nth-child(5) {
+      width: 90px;
+      height: 90px;
+      left: 85%;
+      animation-duration: 16s;
+      animation-delay: 3s;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(50px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    /* 📱 Contenedor principal */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    
+    /* 🎯 Header estilizado */
+    .header-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      margin-bottom: 32px;
+      animation: slideDown 0.6s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+      }
+    }
+    
+    .logo-container svg {
+      width: 48px;
+      height: 48px;
+      color: white;
+    }
+    
+    .main-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+    
+    .main-subtitle {
+      font-size: 1.125rem;
+      color: #64748b;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+    
+    /* 📊 Card de estado */
+    .status-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.8s ease-out 0.2s both;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .status-message {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .status-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    /* 📦 Timeline mejorado */
+    .progress-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.8s ease-out 0.4s both;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 5px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+    }
+    
+    .timeline {
+      position: relative;
+      padding-left: 0;
+      list-style: none;
+    }
+    
+    .timeline-item {
+      position: relative;
+      padding: 24px 0 24px 80px;
+      border-left: 3px solid #e2e8f0;
+      transition: all 0.3s ease;
+      animation: slideInLeft 0.5s ease-out both;
+    }
+    
+    .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+    .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+    .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+    .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+    .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+    
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .timeline-item:last-child {
+      border-left-color: transparent;
+    }
+    
+    .timeline-item.completed {
+      border-left-color: #10b981;
+    }
+    
+    .timeline-item.active {
+      border-left-color: #3b82f6;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+    }
+    
+    .timeline-item.intento {
+      border-left-color: #ef4444;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);
+    }
+    
+    .timeline-item:hover {
+      background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+    }
+    
+    .timeline-icon {
+      position: absolute;
+      left: -32px;
+      top: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: 4px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .timeline-icon.completed {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      animation: checkmark 0.6s ease-out;
+    }
+    
+    @keyframes checkmark {
+      0% {
+        transform: scale(0) rotate(-180deg);
+      }
+      50% {
+        transform: scale(1.2) rotate(10deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+      }
+    }
+    
+    .timeline-icon.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      animation: truck 1s ease-in-out infinite;
+    }
+    
+    @keyframes truck {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(5px);
+      }
+    }
+    
+    .timeline-icon.intento {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      animation: rotate 2s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .timeline-content {
+      background: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .timeline-item:hover .timeline-content {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transform: translateX(5px);
+    }
+    
+    .timeline-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    
+    .timeline-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .timeline-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .timeline-status.pendiente {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .timeline-status.en-camino {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .timeline-status.entregado {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .timeline-status.intento-de-entrega {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    /* 🎭 Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+      font-size: 1.125rem;
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .empty-state::before {
+      content: '📭';
+      display: block;
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: swing 2s infinite ease-in-out;
+    }
+    
+    @keyframes swing {
+      0%, 100% {
+        transform: rotate(-5deg);
+      }
+      50% {
+        transform: rotate(5deg);
+      }
+    }
+    
+    /* 📱 Responsive */
+    @media (max-width: 768px) {
+      .main-title {
+        font-size: 2rem;
+      }
+      
+      .header-card {
+        padding: 32px 24px;
+      }
+      
+      .timeline-item {
+        padding-left: 60px;
+      }
+      
+      .timeline-icon {
+        width: 50px;
+        height: 50px;
+        left: -28px;
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 🎨 Animación de fondo -->
+  <div class="background-animation">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <!-- 📱 Contenedor principal -->
+  <div class="main-container">
+    <!-- 🎯 Header -->
+    <div class="header-card">
+      <div class="logo-container">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+        </svg>
+      </div>
+      <h1 class="main-title">RutaFácil</h1>
+      <p class="main-subtitle">Seguimiento en tiempo real de tus entregas</p>
+    </div>
+
+    <!-- 📊 Estado actual -->
+    <div class="status-card">
+      <div class="status-message" id="estado-mensaje">
+        <div class="status-icon">⏳</div>
+        <span>Cargando estado de entregas...</span>
+      </div>
+    </div>
+
+    <!-- 📦 Timeline de entregas -->
+    <div class="progress-section">
+      <h2 class="section-title">Progreso de Entregas</h2>
+      <ul class="timeline" id="entregas-timeline">
+        <!-- Se llena dinámicamente -->
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
