@@ -1,0 +1,22 @@
+{
+  "name": "rutafacil",
+  "version": "2.0.0",
+  "description": "Sistema profesional de gestión y seguimiento de entregas en tiempo real",
+  "keywords": [
+    "delivery",
+    "tracking",
+    "real-time",
+    "supabase",
+    "logistics"
+  ],
+  "author": "EmanuelG0D",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EmanuelG0D/RutaFacil"
+  },
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "start": "python -m http.server 8000"
+  }
+}
